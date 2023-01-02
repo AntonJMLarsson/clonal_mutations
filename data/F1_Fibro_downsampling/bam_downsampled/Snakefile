@@ -1,0 +1,24 @@
+FRACTIONS = [1.0,0.5,0.3,0.2,0.1,0.05,0.01,0.005, 0.001, 0.0001]
+## Obtained by downloading data from E-MTAB-7098, subset by samtools to the X-chromosome and use the snakemake pipelines
+## found in F1_Fibro_downsampling.
+BAMFILE = "../../F1_Fibro_from_SS3_paper/Smartseq2_Fibroblasts_Anton_rerun.chrX.sorted.bam"
+
+rule all:
+    input: expand("Smartseq2_Fibroblasts_Anton_rerun.chrX.{fraction}.sorted.bam.bai", fraction=FRACTIONS)
+
+rule subsample:
+    input: BAMFILE
+    output: temp("Smartseq2_Fibroblasts_Anton_rerun.chrX.{fraction}_.bam")
+    shell: "samtools view -b --subsample {wildcards.fraction} --subsample-seed 3453423 -o {output} {input}"
+
+rule sort:
+    input: "Smartseq2_Fibroblasts_Anton_rerun.chrX.{fraction}_.bam"
+    output: "Smartseq2_Fibroblasts_Anton_rerun.chrX.{fraction}.sorted.bam"
+    threads: 5
+    shell: "samtools sort -@ {threads} -o {output} {input}"
+
+rule index:
+    input: "Smartseq2_Fibroblasts_Anton_rerun.chrX.{fraction}.sorted.bam"
+    output: "Smartseq2_Fibroblasts_Anton_rerun.chrX.{fraction}.sorted.bam.bai"
+    threads: 5
+    shell: "samtools index -@ {threads} {input}"

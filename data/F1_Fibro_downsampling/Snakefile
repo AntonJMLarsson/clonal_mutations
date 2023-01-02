@@ -1,0 +1,23 @@
+BAMFILES, = glob_wildcards("bam_downsampled/Smartseq2_Fibroblasts_Anton_rerun.chrX.{bam_fraction}.sorted.bam")
+VCFFILES, = glob_wildcards("vcf_downsampled/CAST.SNPs.validated.chrX.{vcf_fraction}.vcf.gz")
+sample = "Smartseq2_Fibroblasts_Anton_rerun"
+barcodes = "../Smartseq2_Fibroblasts_Anton_rerun/expected_barcodes.txt"
+src_dir = "../../XAlgo/src/"
+MAF = 0.01
+t = 10
+
+rule all:
+    input:
+        expand("bam_{bam_fraction}_vcf_{vcf_fraction}/vireo_out/GT_donors.vireo.vcf.gz", bam_fraction=BAMFILES, vcf_fraction = VCFFILES)
+
+rule cellsnp:
+    input: bam = "bam_downsampled/Smartseq2_Fibroblasts_Anton_rerun.chrX.{bam_fraction}.sorted.bam" , vcf = "vcf_downsampled/CAST.SNPs.validated.chrX.{vcf_fraction}.vcf.gz"
+    output: "bam_{bam_fraction}_vcf_{vcf_fraction}/cellsnp/cellSNP.base.vcf.gz"
+    threads: t
+    shell: "cellsnp-lite -s {input.bam} -b {barcodes} -O bam_{wildcards.bam_fraction}_vcf_{wildcards.vcf_fraction}/cellsnp -R {input.vcf} -p {threads} --minCOUNT 5 --minMAF {MAF} --cellTAG BC --gzip --UMItag None"
+rule vireo:
+    input: "bam_{bam_fraction}_vcf_{vcf_fraction}/cellsnp/cellSNP.base.vcf.gz"
+    output: "bam_{bam_fraction}_vcf_{vcf_fraction}/vireo_out/GT_donors.vireo.vcf.gz"
+    threads: t
+    shell: "vireo -c bam_{wildcards.bam_fraction}_vcf_{wildcards.vcf_fraction}/cellsnp/ -N 2 -o bam_{wildcards.bam_fraction}_vcf_{wildcards.vcf_fraction}/vireo_out --noDoublet -p {threads}"
+
