@@ -2,7 +2,7 @@
 
 This repository contain all code and analysis required to reproduce all the results in the manuscript 
 **Inferring clonal somatic mutations directed by X chromosome inactivation status in
-single cells**. Ilke Demirci<sup>\*</sup>, Anton J.M. Larsson<sup>\*</sup>, Rickard Sandberg<sup>\#</sup> and Jonas Frisen<sup>\#</sup>. MANUSCRIPT DOI HERE. 
+single cells**. Ilke Demirci<sup>\*</sup>, Anton J.M. Larsson<sup>\*</sup>, Rickard Sandberg<sup>\#</sup> and Jonas Frisén<sup>\#</sup>. MANUSCRIPT DOI HERE. 
 
 
 
