@@ -1,0 +1,13 @@
+sample:
+bamfile:
+barcodes:
+SNP_file:
+
+contig_mito:
+contig_X:
+cell_tag: 
+
+MAF:
+threads:
+
+src_dir:

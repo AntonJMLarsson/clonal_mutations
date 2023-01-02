@@ -1,0 +1,76 @@
+configfile: "config.yaml"
+
+rule all: 
+    input: "mgatk_out/final/mgatk.rds"
+
+rule extract_reads_mito:
+    input: 
+        config["bamfile"]
+    output:
+        temp("{}.{}.bam".format(config["sample"], config["contig_mito"]))
+    shell: "python3 {config[src_dir]}/extract_reads_mito.py -i {input} -o {output} --contig {config[contig_mito]} --cells {config[barcodes]}"
+
+rule sort_bam_mito:
+    input:
+        "{}.{}.bam".format(config["sample"], config["contig_mito"])
+    output:
+        "{}.{}.sorted.bam".format(config["sample"], config["contig_mito"])
+    threads: config["threads"]
+    shell: "samtools sort -@ {threads} -m 2G -o {output} {input}"
+
+rule index_bam_mito:
+    input: "{}.{}.sorted.bam".format(config["sample"], config["contig_mito"])
+    output: "{}.{}.sorted.bam.bai".format(config["sample"], config["contig_mito"])
+    shell: "samtools index {input}"
+
+rule extract_reads_X:
+    input: 
+        config["bamfile"]
+    output:
+        temp("{}.{}.bam".format(config["sample"], config["contig_X"]))
+    shell: "python3 {config[src_dir]}/extract_reads_X.py -i {input} -o {output} --contig {config[contig_X]} --cells {config[barcodes]}"
+
+rule sort_bam_X:
+    input:
+        "{}.{}.bam".format(config["sample"], config["contig_X"])
+    output:
+        "{}.{}.sorted.bam".format(config["sample"], config["contig_X"])
+    threads: config["threads"]
+    shell: "samtools sort -@ {threads} -m 2G -o {output} {input}"
+
+rule index_bam_X:
+    input: "{}.{}.sorted.bam".format(config["sample"], config["contig_X"])
+    output: "{}.{}.sorted.bam.bai".format(config["sample"], config["contig_X"])
+    shell: "samtools index {input}"
+
+rule mgatk_start:
+    input:
+        bam = "{}.{}.sorted.bam".format(config["sample"], config["contig_mito"]), bai = "{}.{}.sorted.bam.bai".format(config["sample"], config["contig_mito"])
+    output: touch("mgatk_start_done.txt")
+    shell: "mgatk bcall -i {input.bam} -o mgatk_out -g GRCh38 -c 20 -bt BC -b {config[barcodes]} -z"
+
+rule mgatk_gather:
+    input:
+        "mgatk_start_done.txt"
+    output:
+        touch("mgatk_gather_done.txt")
+    shell:
+        "snakemake -s {config[src_dir]}/mgatk_gather.snake --cores 1"
+rule mgatk_toRDS:
+    input:
+        "mgatk_gather_done.txt"
+    output:
+        "mgatk_out/final/mgatk.rds"
+    shell: "Rscript ~/programs/mgatk/mgatk/bin/R/toRDS.R mgatk_out/final/ mgatk"
+
+rule cellsnp:
+    input: bam = "{}.{}.sorted.bam".format(config["sample"], config["contig_X"]), bai = "{}.{}.sorted.bam.bai".format(config["sample"], config["contig_X"])
+    output: "cellsnp/cellSNP.base.vcf.gz"
+    threads: config["threads"]
+    shell: "cellsnp-lite -s {input.bam} -b {config[barcodes]} -O cellsnp -R {config[SNP_file]} -p {threads} --minCOUNT 5 --minMAF {config[MAF]} --cellTAG BC --gzip --UMItag None"
+
+rule vireo:
+    input: "cellsnp/cellSNP.base.vcf.gz"
+    output: "vireo_out/GT_donors.vireo.vcf.gz"
+    threads: config["threads"]
+    shell: "vireo -c cellsnp/ -N 2 -o vireo_out --noDoublet -p {threads}"

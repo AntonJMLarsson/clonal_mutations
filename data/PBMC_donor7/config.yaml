@@ -1,0 +1,15 @@
+sample: 220109_Smartseq3xpress_PBMC_SeqAmp_M462_donor7
+## Get raw data from E-MTAB-11452
+bamfile: path/220109_Smartseq3xpress_PBMC_SeqAmp_M462_donor6_7_8/zUMIs_10nt/SmartseqLV.filtered.Aligned.GeneTagged.UBcorrected.sorted.TSOfilter_v2.bam
+## Use the PBMC metadat file to make this file.
+barcodes: path/PBMCs/expected_barcodes_donor7_run6.txt
+SNP_file: path/zenodo/genome1K.phase3.SNP_AF5e4.chr1toX.hg38.sorted.X.vcf.gz
+
+contig_mito: MT
+contig_X: X
+cell_tag: BC
+
+MAF: 0.01
+threads: 30
+
+src_dir: path/TSTAMTAXAFCD/bin
