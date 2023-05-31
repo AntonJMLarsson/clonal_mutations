@@ -5,7 +5,10 @@ SNP_file:
 
 contig_mito:
 contig_X:
-cell_tag: 
+cell_tag:
+barcode_tag:
+exon_tag:
+intron_tag:
 
 MAF:
 threads:
