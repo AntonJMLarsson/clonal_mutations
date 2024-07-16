@@ -1,3 +1,4 @@
+# Adapted from https://github.com/jingluan-xw/Binomial-Mixture-Model-with-EM-Algorithm/
 import pandas as pd
 import numpy as np
 import os
